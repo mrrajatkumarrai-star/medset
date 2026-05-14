@@ -2,28 +2,47 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
   <title>Ultra Smooth Dual Spiral Visualizer</title>
 
   <style>
     :root {
       --bg-0: #02040a;
+      --bg-1: #07111c;
+      --bg-2: #0b1828;
+
+      --glass: rgba(255, 255, 255, 0.08);
+      --glass-2: rgba(255, 255, 255, 0.12);
+      --line: rgba(255, 255, 255, 0.14);
+      --line-soft: rgba(255, 255, 255, 0.08);
+
       --text: rgba(245, 250, 255, 0.96);
       --text-soft: rgba(210, 226, 248, 0.72);
-      --blue-1: #dff8ff;
-      --blue-2: #8fd8ff;
-      --blue-3: #75a8ff;
-      --shadow: 0 22px 70px rgba(0, 0, 0, 0.42), 0 0 80px rgba(84, 169, 255, 0.08);
+
+      --blue-1: #ecfbff;
+      --blue-2: #9bdcff;
+      --blue-3: #74a8ff;
+
       --radius-xl: 30px;
       --radius-lg: 22px;
       --radius-md: 18px;
-      --transition: 760ms cubic-bezier(.2, .8, .2, 1);
-      --layer-size: 2000px;
+
+      --shadow:
+        0 24px 70px rgba(0, 0, 0, 0.44),
+        0 0 80px rgba(84, 169, 255, 0.08);
+
+      --transition: 780ms cubic-bezier(.2, .8, .2, 1);
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
-    html, body {
+    html,
+    body {
       margin: 0;
       width: 100%;
       height: 100%;
@@ -46,7 +65,10 @@
       pointer-events: none;
       transform: scale(1.02);
       filter: blur(10px);
-      transition: opacity var(--transition), transform var(--transition), filter var(--transition);
+      transition:
+        opacity var(--transition),
+        transform var(--transition),
+        filter var(--transition);
     }
 
     .screen.active {
@@ -56,424 +78,1010 @@
       filter: blur(0);
     }
 
-    /* ---------------------------------
-       SCREEN 1 - SETUP
-    --------------------------------- */
+    /* ----------------------------------------
+       SETUP SCREEN
+    ---------------------------------------- */
     #setupScreen {
       display: grid;
       place-items: center;
       padding: clamp(14px, 3vw, 30px);
-      background: radial-gradient(circle at 16% 18%, rgba(255,255,255,0.08), transparent 24%),
-                  radial-gradient(circle at 84% 20%, rgba(255,255,255,0.06), transparent 22%),
-                  linear-gradient(135deg, #02040a 0%, #07111d 48%, #02050b 100%);
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 16% 18%, rgba(255,255,255,0.08), transparent 24%),
+        radial-gradient(circle at 84% 20%, rgba(255,255,255,0.06), transparent 22%),
+        radial-gradient(circle at 50% 84%, rgba(116,168,255,0.10), transparent 28%),
+        linear-gradient(135deg, #02040a 0%, #07111d 48%, #02050b 100%);
+    }
+
+    #setupScreen::before,
+    #setupScreen::after {
+      content: "";
+      position: absolute;
+      inset: -14%;
+      pointer-events: none;
+      filter: blur(36px);
+      opacity: 0.8;
+      mix-blend-mode: screen;
+      animation: auraFloat 18s ease-in-out infinite alternate;
+    }
+
+    #setupScreen::before {
+      background:
+        radial-gradient(circle at 22% 28%, rgba(255,255,255,0.08), transparent 18%),
+        radial-gradient(circle at 72% 30%, rgba(155,220,255,0.10), transparent 18%);
+    }
+
+    #setupScreen::after {
+      background:
+        radial-gradient(circle at 66% 76%, rgba(116,168,255,0.10), transparent 20%),
+        radial-gradient(circle at 34% 68%, rgba(255,255,255,0.06), transparent 16%);
+      animation-duration: 24s;
+    }
+
+    @keyframes auraFloat {
+      from { transform: translate3d(-1.4%, -1%, 0) scale(1); }
+      to   { transform: translate3d(2%, 1.6%, 0) scale(1.06); }
     }
 
     .panel {
       position: relative;
-      width: min(1000px, 100%);
+      width: min(1020px, 100%);
       max-height: min(94vh, 920px);
       overflow: auto;
       padding: clamp(18px, 2.5vw, 28px);
       border-radius: var(--radius-xl);
-      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.045));
       border: 1px solid rgba(255,255,255,0.12);
       box-shadow: var(--shadow);
-      backdrop-filter: blur(20px) saturate(130%);
-      -webkit-backdrop-filter: blur(20px) saturate(130%);
+      backdrop-filter: blur(20px) saturate(135%);
+      -webkit-backdrop-filter: blur(20px) saturate(135%);
     }
 
-    .hero { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
-    .hero h1 { margin: 0 0 10px; font-size: clamp(30px, 5vw, 54px); line-height: 0.95; font-weight: 850; color: transparent; background: linear-gradient(180deg, var(--blue-1), var(--blue-2), var(--blue-3)); -webkit-background-clip: text; background-clip: text; }
-    .hero p { margin: 0; max-width: 700px; font-size: clamp(14px, 1.8vw, 16px); line-height: 1.55; color: var(--text-soft); }
-    .tag { padding: 10px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); font-size: 12px; text-transform: uppercase; }
-
-    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-    .card { padding: 18px; border-radius: var(--radius-lg); background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)); border: 1px solid rgba(255,255,255,0.10); }
-    .card h2 { margin: 0 0 14px; font-size: 15px; text-transform: uppercase; font-weight: 800; }
-    
-    .uploadBox, .controls { display: grid; gap: 14px; }
-    .fileWrap { display: grid; gap: 10px; }
-    .fileButton { position: relative; min-height: 108px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 16px; border-radius: var(--radius-md); border: 1px dashed rgba(255,255,255,0.18); background: rgba(255,255,255,0.04); cursor: pointer; transition: 200ms; }
-    .fileButton:hover { border-color: rgba(157, 221, 255, 0.45); background: rgba(255,255,255,0.08); }
-    .fileButton input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-    .fileMeta { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-soft); }
-    
-    .row { display: grid; gap: 8px; }
-    .labelLine { display: flex; justify-content: space-between; font-size: 13px; }
-    .value { color: #9dd8ff; font-weight: 700; }
-    
-    input[type="range"] { width: 100%; appearance: none; height: 10px; border-radius: 999px; outline: none; background: rgba(255,255,255,0.14); }
-    input[type="range"]::-webkit-slider-thumb { appearance: none; width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.28); background: #fff; cursor: pointer; }
-    input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border: 0; border-radius: 50%; background: #fff; cursor: pointer; }
-    
-    .footer { display: flex; justify-content: center; padding-top: 18px; }
-    .submitBtn { min-width: min(340px, 100%); padding: 17px 26px; border: 0; border-radius: 999px; cursor: pointer; color: #031018; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase; background: linear-gradient(90deg, #f9feff, #bdefff 48%, #8fc3ff 100%); box-shadow: 0 14px 38px rgba(122, 219, 255, 0.18); transition: 220ms; }
-    .submitBtn:hover { transform: translateY(-2px); filter: saturate(110%); }
-
-    /* ---------------------------------
-       SCREEN 2 - VISUALIZER
-    --------------------------------- */
-    #visualizerScreen { overflow: hidden; background: #010205; }
-    
-    /* Pre-rendered static background animated exclusively via GPU transform */
-    .visualBg {
+    .panel::before {
+      content: "";
       position: absolute;
-      inset: -50%; /* Massive oversize to never show edges while rotating */
-      background: radial-gradient(circle at 30% 30%, rgba(86,205,255,0.12), transparent 40%),
-                  radial-gradient(circle at 70% 70%, rgba(104,141,255,0.12), transparent 40%),
-                  linear-gradient(135deg, #02040a 0%, #07101c 50%, #010205 100%);
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(
+        130deg,
+        rgba(255,255,255,0.24),
+        rgba(255,255,255,0.08),
+        rgba(155,220,255,0.18),
+        rgba(255,255,255,0.10)
+      );
+      -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: clamp(30px, 5vw, 54px);
+      line-height: 0.95;
+      letter-spacing: -0.045em;
+      font-weight: 850;
+      color: transparent;
+      background: linear-gradient(180deg, var(--blue-1), var(--blue-2), var(--blue-3));
+      -webkit-background-clip: text;
+      background-clip: text;
+      text-shadow: 0 0 20px rgba(143, 216, 255, 0.16);
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 700px;
+      font-size: clamp(14px, 1.8vw, 16px);
+      line-height: 1.55;
+      color: var(--text-soft);
+    }
+
+    .tag {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(177, 220, 255, 0.94);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      padding: 18px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      border: 1px solid rgba(255,255,255,0.10);
+      overflow: hidden;
+    }
+
+    .card h2 {
+      margin: 0 0 14px;
+      font-size: 15px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: rgba(177, 220, 255, 0.96);
+    }
+
+    .uploadBox,
+    .controls {
+      display: grid;
+      gap: 14px;
+    }
+
+    .fileWrap {
+      display: grid;
+      gap: 10px;
+    }
+
+    .fileButton {
+      position: relative;
+      min-height: 108px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      border: 1px dashed rgba(255,255,255,0.18);
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      cursor: pointer;
+      transition: transform 220ms ease, border-color 220ms ease, background 220ms ease;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .fileButton:hover {
+      transform: translateY(-1px);
+      border-color: rgba(157, 221, 255, 0.45);
+      background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.05));
+    }
+
+    .fileButton input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .fileMeta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 18px;
+      font-size: 12px;
+      color: var(--text-soft);
+    }
+
+    .ok {
+      color: #bbf6ff;
+      font-weight: 700;
+    }
+
+    .row {
+      display: grid;
+      gap: 8px;
+    }
+
+    .labelLine {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      color: rgba(230, 241, 255, 0.92);
+    }
+
+    .value {
+      color: #9dd8ff;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .hintText {
+      color: rgba(174, 201, 227, 0.74);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      appearance: none;
+      height: 10px;
+      border-radius: 999px;
+      outline: none;
+      background: linear-gradient(90deg, rgba(255,255,255,0.14), rgba(151,211,255,0.18));
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.28);
+      background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(180,232,255,0.95));
+      box-shadow: 0 0 22px rgba(121, 213, 255, 0.28);
+      cursor: pointer;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border: 0;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(180,232,255,0.95));
+      box-shadow: 0 0 22px rgba(121, 213, 255, 0.28);
+      cursor: pointer;
+    }
+
+    .opposite {
+      transform: scaleX(-1);
+    }
+
+    .status {
+      min-height: 20px;
+      margin-top: 12px;
+      text-align: center;
+      color: rgba(191, 230, 255, 0.78);
+      font-size: 13px;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: center;
+      padding-top: 18px;
+    }
+
+    .submitBtn {
+      min-width: min(340px, 100%);
+      padding: 17px 26px;
+      border: 0;
+      border-radius: 999px;
+      cursor: pointer;
+      color: #031018;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #f9feff, #bdefff 48%, #8fc3ff 100%);
+      box-shadow:
+        0 14px 38px rgba(122, 219, 255, 0.18),
+        0 8px 24px rgba(83, 129, 255, 0.16);
+      transition: transform 220ms ease, box-shadow 220ms ease, filter 220ms ease;
+    }
+
+    .submitBtn:hover {
+      transform: translateY(-2px) scale(1.01);
+      filter: saturate(110%);
+      box-shadow:
+        0 20px 46px rgba(122, 219, 255, 0.24),
+        0 10px 28px rgba(83, 129, 255, 0.20);
+    }
+
+    /* ----------------------------------------
+       VISUALIZER SCREEN
+    ---------------------------------------- */
+    #visualizerScreen {
+      overflow: hidden;
+      background: #010205;
+    }
+
+    .bgMesh {
+      position: absolute;
+      inset: -45%;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 22% 24%, rgba(95, 216, 255, 0.18), transparent 24%),
+        radial-gradient(circle at 78% 28%, rgba(103, 137, 255, 0.16), transparent 26%),
+        radial-gradient(circle at 50% 82%, rgba(255,255,255,0.06), transparent 20%),
+        linear-gradient(135deg, #02040a 0%, #07101c 45%, #010308 100%);
+      transform-origin: center center;
       will-change: transform;
-      transform-origin: center;
+      animation: bgDrift 18s linear infinite;
     }
 
-    #particleCanvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.9; }
-
-    #stage { position: absolute; inset: 0; z-index: 2; overflow: hidden; }
-
-    .layer {
+    .bgVeil {
       position: absolute;
-      left: 50%; top: 50%;
-      width: var(--layer-size); height: var(--layer-size);
-      /* Base centering via margin avoids recalculating origin bounds */
-      margin-left: calc(var(--layer-size) / -2);
-      margin-top: calc(var(--layer-size) / -2);
+      inset: -18%;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05), transparent 18%),
+        radial-gradient(circle at 50% 50%, rgba(127,232,255,0.06), transparent 34%),
+        radial-gradient(circle at 50% 50%, rgba(104,141,255,0.06), transparent 40%);
+      filter: blur(18px);
+      mix-blend-mode: screen;
+      opacity: 0.9;
+    }
+
+    @keyframes bgDrift {
+      0%   { transform: scale(1.18) rotate(0deg); }
+      50%  { transform: scale(1.24) rotate(8deg); }
+      100% { transform: scale(1.18) rotate(16deg); }
+    }
+
+    .renderCanvas,
+    .particleCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
       pointer-events: none;
       will-change: transform;
-      transform-style: preserve-3d;
-      backface-visibility: hidden;
     }
 
-    /* Outer wrapper for Translation (Spiral path) */
-    .layerMotion {
-      position: absolute; inset: 0;
-      will-change: transform;
-      transform-style: preserve-3d;
+    .particleCanvas {
+      opacity: 0.88;
     }
 
-    /* Inner wrapper for Rotation/Scale (Spinning) */
-    .layerImgWrapper {
-      position: absolute; inset: 0;
-      will-change: transform, opacity;
-      transform-origin: center center;
-    }
-
-    /* High-performance static glow instead of expensive drop-shadow */
-    .staticGlow {
+    .topActions {
       position: absolute;
-      inset: 15%;
+      top: max(10px, env(safe-area-inset-top));
+      right: max(10px, env(safe-area-inset-right));
+      z-index: 6;
+      display: flex;
+      gap: 8px;
+      opacity: 0.08;
+      transition: opacity 220ms ease;
+    }
+
+    #visualizerScreen:hover .topActions,
+    #visualizerScreen.show-ui .topActions {
+      opacity: 0.72;
+    }
+
+    .iconBtn {
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      border: 0;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(127,232,255,0.3) 0%, transparent 60%);
-      filter: blur(40px);
-      z-index: 1;
+      background: rgba(255,255,255,0.06);
+      color: rgba(236, 247, 255, 0.9);
+      cursor: pointer;
+      padding: 0;
+      font-size: 12px;
+      line-height: 1;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: transform 180ms ease, background 180ms ease;
     }
 
-    .layerImg {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%;
-      object-fit: cover; /* Guarantees image fills the massive container completely */
-      user-select: none; -webkit-user-drag: none; pointer-events: none;
-      mix-blend-mode: screen;
-      z-index: 2;
-      /* NO CSS FILTERS HERE! Keeps rotation buttery smooth */
+    .iconBtn:hover,
+    .iconBtn:focus-visible {
+      transform: scale(1.08);
+      background: rgba(255,255,255,0.14);
+      outline: none;
     }
 
-    /* Buttons */
-    .topActions { position: absolute; top: 10px; right: 10px; z-index: 6; display: flex; gap: 8px; opacity: 0.08; transition: 220ms; }
-    #visualizerScreen:hover .topActions, #visualizerScreen.show-ui .topActions { opacity: 0.8; }
-    .iconBtn { width: 32px; height: 32px; border: 0; border-radius: 50%; background: rgba(255,255,255,0.1); color: #fff; cursor: pointer; font-size: 14px; backdrop-filter: blur(10px); transition: 180ms; }
-    .iconBtn:hover { transform: scale(1.1); background: rgba(255,255,255,0.2); }
-    
-    @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } .panel { padding: 16px; } }
+    .screenHint {
+      position: absolute;
+      left: 50%;
+      bottom: max(12px, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      z-index: 5;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: rgba(223, 237, 255, 0.56);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.05);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      opacity: 0;
+      transition: opacity 600ms ease;
+      pointer-events: none;
+    }
+
+    #visualizerScreen.active .screenHint {
+      opacity: 1;
+    }
+
+    @media (max-width: 860px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        padding: 16px;
+      }
+
+      .hero h1 {
+        font-size: clamp(26px, 9vw, 40px);
+      }
+
+      .submitBtn {
+        min-width: 100%;
+      }
+
+      .topActions {
+        opacity: 0.26;
+      }
+    }
   </style>
 </head>
 <body>
-
   <!-- SCREEN 1 -->
   <section id="setupScreen" class="screen active">
     <div class="panel">
       <div class="hero">
         <div>
-          <h1>Hyper Smooth Visualizer</h1>
-          <p>Locked frame rates. Screen-filling imagery. Upload two transparent PNGs, tune opposite rotation, and launch.</p>
+          <h1>Dual Spiral Visualizer</h1>
+          <p>
+            Upload up to two transparent PNG layers, set opposite rotation speeds,
+            and launch a smoother center-locked spiral scene with full-screen coverage.
+          </p>
         </div>
+        <div class="tag">White Glass / Blue Type</div>
       </div>
+
       <div class="grid">
         <div class="card">
           <h2>Images</h2>
           <div class="uploadBox">
             <div class="fileWrap">
               <label class="fileButton">
-                <div><div style="font-weight:800; color:#eaf8ff;">Upload PNG — Image A</div><div style="font-size:13px; color:var(--text-soft);">Clockwise layer</div></div>
+                <div>
+                  <div style="font-weight:800; margin-bottom:6px; color:#eaf8ff;">Upload PNG — Image A</div>
+                  <div style="font-size:13px; color:var(--text-soft);">Clockwise layer</div>
+                </div>
                 <input id="file1" type="file" accept="image/png" />
               </label>
-              <div class="fileMeta"><span id="file1Name">Empty</span><span id="file1State"></span></div>
+              <div class="fileMeta">
+                <span id="file1Name">Leave blank if not needed</span>
+                <span id="file1State"></span>
+              </div>
             </div>
+
             <div class="fileWrap">
               <label class="fileButton">
-                <div><div style="font-weight:800; color:#eaf8ff;">Upload PNG — Image B</div><div style="font-size:13px; color:var(--text-soft);">Counterclockwise layer</div></div>
+                <div>
+                  <div style="font-weight:800; margin-bottom:6px; color:#eaf8ff;">Upload PNG — Image B</div>
+                  <div style="font-size:13px; color:var(--text-soft);">Counterclockwise layer</div>
+                </div>
                 <input id="file2" type="file" accept="image/png" />
               </label>
-              <div class="fileMeta"><span id="file2Name">Empty</span><span id="file2State"></span></div>
+              <div class="fileMeta">
+                <span id="file2Name">Leave blank if not needed</span>
+                <span id="file2State"></span>
+              </div>
             </div>
           </div>
         </div>
+
         <div class="card">
           <h2>Rotation speeds</h2>
           <div class="controls">
             <div class="row">
-              <div class="labelLine"><span>Image A — clockwise</span><span class="value" id="speed1Val">48°/s</span></div>
-              <input id="speed1" type="range" min="0" max="300" value="48" />
+              <div class="labelLine">
+                <span>Image A — clockwise</span>
+                <span class="value" id="speed1Val">42°/s</span>
+              </div>
+              <input id="speed1" type="range" min="0" max="320" value="42" />
             </div>
+
             <div class="row">
-              <div class="labelLine"><span>Image B — counterclockwise</span><span class="value" id="speed2Val">64°/s</span></div>
-              <input id="speed2" type="range" min="0" max="300" value="64" style="transform: scaleX(-1)" />
+              <div class="labelLine">
+                <span>Image B — counterclockwise</span>
+                <span class="value" id="speed2Val">56°/s</span>
+              </div>
+              <input id="speed2" class="opposite" type="range" min="0" max="320" value="56" />
+            </div>
+
+            <div class="hintText">
+              This version is optimized to avoid micro-stutter: one render loop, no per-frame DOM layout reads,
+              no animated CSS filters on the image layers, and capped device pixel ratio on mobile.
             </div>
           </div>
         </div>
       </div>
-      <div class="footer"><button id="submitBtn" class="submitBtn">Launch Immersive Mode</button></div>
+
+      <div id="status" class="status"></div>
+
+      <div class="footer">
+        <button id="submitBtn" class="submitBtn">Submit</button>
+      </div>
     </div>
   </section>
 
   <!-- SCREEN 2 -->
   <section id="visualizerScreen" class="screen" aria-hidden="true">
-    <div id="visualBg" class="visualBg"></div>
-    <canvas id="particleCanvas"></canvas>
+    <div class="bgMesh"></div>
+    <div class="bgVeil"></div>
 
-    <div id="stage">
-      <div id="layerA" class="layer">
-        <div id="motionA" class="layerMotion">
-          <div id="wrapA" class="layerImgWrapper">
-            <div class="staticGlow"></div>
-            <img id="imgA" class="layerImg" alt="" />
-          </div>
-        </div>
-      </div>
-
-      <div id="layerB" class="layer">
-        <div id="motionB" class="layerMotion">
-          <div id="wrapB" class="layerImgWrapper">
-            <div class="staticGlow" style="background: radial-gradient(circle, rgba(104,141,255,0.3) 0%, transparent 60%);"></div>
-            <img id="imgB" class="layerImg" alt="" />
-          </div>
-        </div>
-      </div>
-    </div>
+    <canvas id="particleCanvas" class="particleCanvas"></canvas>
+    <canvas id="renderCanvas" class="renderCanvas"></canvas>
 
     <div class="topActions">
-      <button id="fullscreenBtn" class="iconBtn" title="Toggle Fullscreen">⤢</button>
-      <button id="closeBtn" class="iconBtn" title="Close">✕</button>
+      <button id="fullscreenBtn" class="iconBtn" aria-label="Toggle fullscreen" title="Toggle fullscreen">⤢</button>
+      <button id="closeBtn" class="iconBtn" aria-label="Close visualizer" title="Close visualizer">✕</button>
     </div>
+
+    <div class="screenHint">Hover or touch top-right for controls</div>
   </section>
 
   <script>
-    const setupScreen = document.getElementById('setupScreen');
-    const visualizerScreen = document.getElementById('visualizerScreen');
-    
-    // Inputs
-    const file1 = document.getElementById('file1');
-    const file2 = document.getElementById('file2');
-    const speed1 = document.getElementById('speed1');
-    const speed2 = document.getElementById('speed2');
-    
-    // Visualizer Elements
-    const visualBg = document.getElementById('visualBg');
-    const layerA = document.getElementById('layerA');
-    const layerB = document.getElementById('layerB');
-    const motionA = document.getElementById('motionA');
-    const motionB = document.getElementById('motionB');
-    const wrapA = document.getElementById('wrapA');
-    const wrapB = document.getElementById('wrapB');
-    const imgA = document.getElementById('imgA');
-    const imgB = document.getElementById('imgB');
-    
-    const canvas = document.getElementById('particleCanvas');
-    const ctx = canvas.getContext('2d', { alpha: false }); // Optimization for base canvas layer
+    (() => {
+      const el = {
+        setupScreen: document.getElementById('setupScreen'),
+        visualizerScreen: document.getElementById('visualizerScreen'),
+        submitBtn: document.getElementById('submitBtn'),
+        fullscreenBtn: document.getElementById('fullscreenBtn'),
+        closeBtn: document.getElementById('closeBtn'),
+        status: document.getElementById('status'),
 
-    // State
-    const state = {
-      urls: [null, null],
-      running: false,
-      startTime: 0,
-      particles: [],
-      pCanvas: null // Pre-rendered particle
-    };
+        file1: document.getElementById('file1'),
+        file2: document.getElementById('file2'),
+        file1Name: document.getElementById('file1Name'),
+        file2Name: document.getElementById('file2Name'),
+        file1State: document.getElementById('file1State'),
+        file2State: document.getElementById('file2State'),
 
-    // ----------------------------------------------------
-    // PRE-RENDER PARTICLE (MASSIVE CPU SAVINGS)
-    // ----------------------------------------------------
-    function initParticleSprite() {
-      state.pCanvas = document.createElement('canvas');
-      state.pCanvas.width = 64;
-      state.pCanvas.height = 64;
-      const pCtx = state.pCanvas.getContext('2d');
-      const grad = pCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
-      grad.addColorStop(0, 'rgba(255,255,255,1)');
-      grad.addColorStop(0.3, 'rgba(127,232,255,0.8)');
-      grad.addColorStop(1, 'rgba(0,0,0,0)');
-      pCtx.fillStyle = grad;
-      pCtx.fillRect(0, 0, 64, 64);
-    }
-    initParticleSprite();
+        speed1: document.getElementById('speed1'),
+        speed2: document.getElementById('speed2'),
+        speed1Val: document.getElementById('speed1Val'),
+        speed2Val: document.getElementById('speed2Val'),
 
-    function updateLayerSize() {
-      // Create a massive layer that covers the screen at any angle
-      const diagonal = Math.hypot(window.innerWidth, window.innerHeight);
-      const size = Math.max(Math.ceil(diagonal * 1.5), 1800); // 1.5x overscan guarantees corners never clip
-      document.documentElement.style.setProperty('--layer-size', `${size}px`);
-    }
+        renderCanvas: document.getElementById('renderCanvas'),
+        particleCanvas: document.getElementById('particleCanvas')
+      };
 
-    function syncLayers() {
-      layerA.style.display = state.urls[0] ? 'block' : 'none';
-      layerB.style.display = state.urls[1] ? 'block' : 'none';
-    }
+      const renderCtx = el.renderCanvas.getContext('2d', {
+        alpha: true,
+        desynchronized: true
+      });
 
-    function handleFile(e, index) {
-      const file = e.target.files[0];
-      const img = index === 0 ? imgA : imgB;
-      const nameStr = index === 0 ? 'file1Name' : 'file2Name';
-      
-      if (!file || file.type !== 'image/png') return;
-      if (state.urls[index]) URL.revokeObjectURL(state.urls[index]);
-      
-      state.urls[index] = URL.createObjectURL(file);
-      img.src = state.urls[index];
-      document.getElementById(nameStr).textContent = "Ready";
-      syncLayers();
-    }
+      const particleCtx = el.particleCanvas.getContext('2d', {
+        alpha: true,
+        desynchronized: true
+      });
 
-    file1.addEventListener('change', e => handleFile(e, 0));
-    file2.addEventListener('change', e => handleFile(e, 1));
-    speed1.addEventListener('input', e => document.getElementById('speed1Val').textContent = e.target.value + '°/s');
-    speed2.addEventListener('input', e => document.getElementById('speed2Val').textContent = e.target.value + '°/s');
+      const state = {
+        active: false,
+        rafId: 0,
+        startTime: 0,
+        lastTime: 0,
+        uiTimer: 0,
 
-    // ----------------------------------------------------
-    // PARTICLES
-    // ----------------------------------------------------
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      
-      const count = Math.min(40, Math.floor((window.innerWidth * window.innerHeight) / 45000));
-      state.particles = Array.from({ length: count }, () => ({
-        angle: Math.random() * Math.PI * 2,
-        radius: Math.random() * Math.max(window.innerWidth, window.innerHeight) * 0.6,
-        size: 0.5 + Math.random() * 1.5,
-        speed: 0.00015 + Math.random() * 0.0003,
-        alpha: 0.05 + Math.random() * 0.15,
-        phase: Math.random() * Math.PI * 2
-      }));
-    }
+        width: 0,
+        height: 0,
+        cx: 0,
+        cy: 0,
+        dpr: 1,
+        diag: 0,
+        coverBox: 0,
 
-    function drawParticles(t) {
-      ctx.fillStyle = '#010205'; // Fast clear
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+        uploads: [
+          { bitmap: null, url: null, name: '' },
+          { bitmap: null, url: null, name: '' }
+        ],
 
-      const cx = canvas.width / 2;
-      const cy = canvas.height / 2;
+        particles: [],
+        particleSprite: null,
+        glowSpriteA: null,
+        glowSpriteB: null
+      };
 
-      for (let i = 0; i < state.particles.length; i++) {
-        const p = state.particles[i];
-        const a = p.angle + t * p.speed;
-        const r = p.radius * (0.95 + 0.05 * Math.sin(t * 0.001 + p.phase));
-        const x = cx + Math.cos(a) * r;
-        const y = cy + Math.sin(a) * r;
+      const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 
-        ctx.globalAlpha = p.alpha * (0.6 + 0.4 * Math.sin(t * 0.0015 + p.phase));
-        const drawSize = p.size * 32; 
-        
-        // Fast blit from pre-rendered canvas
-        ctx.drawImage(state.pCanvas, x - drawSize/2, y - drawSize/2, drawSize, drawSize);
+      function setStatus(message = '') {
+        el.status.textContent = message;
       }
-      ctx.globalAlpha = 1.0;
-    }
 
-    // ----------------------------------------------------
-    // SUPER SMOOTH GPU LOOP
-    // ----------------------------------------------------
-    function animate(now) {
-      if (!state.startTime) state.startTime = now;
-      const elapsed = (now - state.startTime) / 1000;
-      
-      if (state.running) {
-        // 1. Draw particles
-        drawParticles(now);
+      function updateSpeedLabels() {
+        el.speed1Val.textContent = `${el.speed1.value}°/s`;
+        el.speed2Val.textContent = `${el.speed2.value}°/s`;
+      }
 
-        // 2. Hardware-accelerated background motion
-        visualBg.style.transform = `scale(1.2) rotate(${elapsed * 2}deg)`;
+      function pingUI() {
+        el.visualizerScreen.classList.add('show-ui');
+        clearTimeout(state.uiTimer);
+        state.uiTimer = setTimeout(() => {
+          el.visualizerScreen.classList.remove('show-ui');
+        }, 1600);
+      }
 
-        // 3. Hardware-accelerated layer transforms
-        const sA = Number(speed1.value);
-        const sB = Number(speed2.value);
-        
-        const minSide = Math.min(window.innerWidth, window.innerHeight);
-        const orbitRadius = minSide * 0.025; // Keep center tight
-
-        // Calculate smooth paths
-        const ax = Math.cos(elapsed * 0.8) * orbitRadius;
-        const ay = Math.sin(elapsed * 0.9) * orbitRadius;
-        const bx = Math.cos(elapsed * 0.85 + Math.PI) * orbitRadius;
-        const by = Math.sin(elapsed * 0.95 + Math.PI) * orbitRadius;
-
-        const breathe = 1 + 0.02 * Math.sin(elapsed * 1.5);
-        
-        if (state.urls[0]) {
-          // Translate wrapping div
-          motionA.style.transform = `translate3d(${ax.toFixed(2)}px, ${ay.toFixed(2)}px, 0)`;
-          // Rotate/Scale inner div
-          wrapA.style.transform = `rotate(${(elapsed * sA).toFixed(2)}deg) scale(${breathe.toFixed(3)})`;
-          wrapA.style.opacity = (0.95 + 0.05 * Math.sin(elapsed * 2)).toFixed(3);
-        }
-
-        if (state.urls[1]) {
-          motionB.style.transform = `translate3d(${bx.toFixed(2)}px, ${by.toFixed(2)}px, 0)`;
-          wrapB.style.transform = `rotate(${(-elapsed * sB).toFixed(2)}deg) scale(${(breathe * 0.98).toFixed(3)})`;
-          wrapB.style.opacity = (0.95 + 0.05 * Math.cos(elapsed * 1.8)).toFixed(3);
+      function revokeUpload(index) {
+        const current = state.uploads[index];
+        if (current.url) {
+          URL.revokeObjectURL(current.url);
+          current.url = null;
         }
       }
-      
-      requestAnimationFrame(animate);
-    }
 
-    // ----------------------------------------------------
-    // EVENTS
-    // ----------------------------------------------------
-    document.getElementById('submitBtn').addEventListener('click', () => {
-      syncLayers();
-      setupScreen.classList.remove('active');
-      visualizerScreen.classList.add('active');
-      state.running = true;
-      visualizerScreen.classList.add('show-ui');
-      setTimeout(() => visualizerScreen.classList.remove('show-ui'), 2000);
-    });
+      function resetUpload(index) {
+        revokeUpload(index);
+        state.uploads[index].bitmap = null;
+        state.uploads[index].name = '';
 
-    document.getElementById('closeBtn').addEventListener('click', async () => {
-      state.running = false;
-      if (document.fullscreenElement) await document.exitFullscreen().catch(()=>{});
-      visualizerScreen.classList.remove('active');
-      setupScreen.classList.add('active');
-    });
+        if (index === 0) {
+          el.file1Name.textContent = 'Leave blank if not needed';
+          el.file1State.textContent = '';
+          el.file1State.className = '';
+        } else {
+          el.file2Name.textContent = 'Leave blank if not needed';
+          el.file2State.textContent = '';
+          el.file2State.className = '';
+        }
+      }
 
-    document.getElementById('fullscreenBtn').addEventListener('click', async () => {
-      if (!document.fullscreenElement) await visualizerScreen.requestFullscreen().catch(()=>{});
-      else await document.exitFullscreen().catch(()=>{});
-    });
+      async function decodePNG(file) {
+        if ('createImageBitmap' in window) {
+          return await createImageBitmap(file, {
+            premultiplyAlpha: 'premultiply',
+            imageOrientation: 'none'
+          });
+        }
 
-    visualizerScreen.addEventListener('mousemove', () => {
-      visualizerScreen.classList.add('show-ui');
-      clearTimeout(state.uiTimer);
-      state.uiTimer = setTimeout(() => visualizerScreen.classList.remove('show-ui'), 1500);
-    });
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.decoding = 'async';
+        img.src = url;
 
-    window.addEventListener('resize', () => {
-      updateLayerSize();
-      resizeCanvas();
-    });
+        await img.decode();
+        URL.revokeObjectURL(url);
+        return img;
+      }
 
-    updateLayerSize();
-    resizeCanvas();
-    syncLayers();
-    requestAnimationFrame(animate);
+      async function handleFile(file, index) {
+        if (!file) {
+          resetUpload(index);
+          return;
+        }
+
+        if (file.type !== 'image/png') {
+          setStatus('Please upload PNG files only.');
+          return;
+        }
+
+        try {
+          setStatus('Decoding image…');
+
+          revokeUpload(index);
+
+          const url = URL.createObjectURL(file);
+          const bitmap = await decodePNG(file);
+
+          state.uploads[index].url = url;
+          state.uploads[index].bitmap = bitmap;
+          state.uploads[index].name = file.name;
+
+          if (index === 0) {
+            el.file1Name.textContent = file.name;
+            el.file1State.textContent = 'Ready';
+            el.file1State.className = 'ok';
+          } else {
+            el.file2Name.textContent = file.name;
+            el.file2State.textContent = 'Ready';
+            el.file2State.className = 'ok';
+          }
+
+          setStatus('');
+        } catch (err) {
+          resetUpload(index);
+          setStatus('Could not load that PNG.');
+        }
+      }
+
+      function createGlowSprite(colorA, colorB) {
+        const size = 512;
+        const c = document.createElement('canvas');
+        c.width = size;
+        c.height = size;
+        const ctx = c.getContext('2d');
+
+        const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+        g.addColorStop(0, colorA);
+        g.addColorStop(0.35, colorB);
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, size, size);
+
+        return c;
+      }
+
+      function createParticleSprite() {
+        const size = 64;
+        const c = document.createElement('canvas');
+        c.width = size;
+        c.height = size;
+
+        const ctx = c.getContext('2d');
+        const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+
+        g.addColorStop(0, 'rgba(255,255,255,1)');
+        g.addColorStop(0.24, 'rgba(127,232,255,0.88)');
+        g.addColorStop(0.62, 'rgba(104,141,255,0.28)');
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, size, size);
+
+        return c;
+      }
+
+      function configureContexts() {
+        renderCtx.imageSmoothingEnabled = true;
+        renderCtx.imageSmoothingQuality = 'medium';
+
+        particleCtx.imageSmoothingEnabled = true;
+        particleCtx.imageSmoothingQuality = 'low';
+      }
+
+      function resizeCanvases() {
+        state.dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+        state.width = window.innerWidth;
+        state.height = window.innerHeight;
+        state.cx = state.width * 0.5;
+        state.cy = state.height * 0.5;
+        state.diag = Math.hypot(state.width, state.height);
+
+        renderCtx.setTransform(1, 0, 0, 1, 0, 0);
+        particleCtx.setTransform(1, 0, 0, 1, 0, 0);
+
+        el.renderCanvas.width = Math.round(state.width * state.dpr);
+        el.renderCanvas.height = Math.round(state.height * state.dpr);
+        el.renderCanvas.style.width = `${state.width}px`;
+        el.renderCanvas.style.height = `${state.height}px`;
+
+        el.particleCanvas.width = Math.round(state.width * state.dpr);
+        el.particleCanvas.height = Math.round(state.height * state.dpr);
+        el.particleCanvas.style.width = `${state.width}px`;
+        el.particleCanvas.style.height = `${state.height}px`;
+
+        renderCtx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
+        particleCtx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
+
+        state.coverBox = Math.max(state.diag * 1.9, 1800);
+
+        initParticles();
+      }
+
+      function initParticles() {
+        const count = Math.max(22, Math.min(44, Math.floor((state.width * state.height) / 52000)));
+
+        state.particles = Array.from({ length: count }, () => ({
+          angle: Math.random() * Math.PI * 2,
+          radius: Math.random() * Math.max(state.width, state.height) * 0.62,
+          size: 0.7 + Math.random() * 1.6,
+          speed: 0.00015 + Math.random() * 0.00035,
+          alpha: 0.05 + Math.random() * 0.11,
+          phase: Math.random() * Math.PI * 2
+        }));
+      }
+
+      function drawParticles(timeMs) {
+        particleCtx.clearRect(0, 0, state.width, state.height);
+        particleCtx.globalCompositeOperation = 'screen';
+
+        for (let i = 0; i < state.particles.length; i++) {
+          const p = state.particles[i];
+          const a = p.angle + timeMs * p.speed;
+          const r = p.radius * (0.95 + 0.05 * Math.sin(timeMs * 0.001 + p.phase));
+          const x = state.cx + Math.cos(a) * r;
+          const y = state.cy + Math.sin(a * 1.04) * r * 0.94;
+
+          const size = p.size * 28;
+          particleCtx.globalAlpha = p.alpha * (0.65 + 0.35 * Math.sin(timeMs * 0.00125 + p.phase));
+          particleCtx.drawImage(state.particleSprite, x - size * 0.5, y - size * 0.5, size, size);
+        }
+
+        particleCtx.globalAlpha = 1;
+        particleCtx.globalCompositeOperation = 'source-over';
+      }
+
+      function fitCover(image, boxSize, extraScale = 1) {
+        const iw = image.width || image.naturalWidth;
+        const ih = image.height || image.naturalHeight;
+        const scale = Math.max(boxSize / iw, boxSize / ih) * extraScale;
+
+        return {
+          width: iw * scale,
+          height: ih * scale
+        };
+      }
+
+      function drawLayer(image, glow, centerX, centerY, rotation, pulseScale, alpha) {
+        const box = state.coverBox;
+        const fitted = fitCover(image, box, pulseScale);
+
+        renderCtx.save();
+        renderCtx.translate(centerX, centerY);
+        renderCtx.rotate(rotation);
+
+        renderCtx.globalCompositeOperation = 'screen';
+        renderCtx.globalAlpha = alpha * 0.62;
+        renderCtx.drawImage(glow, -box * 0.65, -box * 0.65, box * 1.3, box * 1.3);
+
+        renderCtx.globalCompositeOperation = 'source-over';
+        renderCtx.globalAlpha = alpha;
+        renderCtx.drawImage(
+          image,
+          -fitted.width * 0.5,
+          -fitted.height * 0.5,
+          fitted.width,
+          fitted.height
+        );
+        renderCtx.restore();
+      }
+
+      function renderFrame(timeMs) {
+        if (!state.startTime) {
+          state.startTime = timeMs;
+          state.lastTime = timeMs;
+        }
+
+        const dt = clamp((timeMs - state.lastTime) / 1000, 0, 0.05);
+        state.lastTime = timeMs;
+
+        if (state.active) {
+          const elapsed = (timeMs - state.startTime) / 1000;
+          const minSide = Math.min(state.width, state.height);
+
+          drawParticles(timeMs);
+          renderCtx.clearRect(0, 0, state.width, state.height);
+
+          const speedA = Number(el.speed1.value);
+          const speedB = Number(el.speed2.value);
+
+          const orbitBase = minSide * 0.018;
+          const orbitA = orbitBase * (0.82 + 0.18 * Math.sin(elapsed * 0.92));
+          const orbitB = orbitBase * (0.82 + 0.18 * Math.cos(elapsed * 0.88));
+
+          const ax =
+            Math.cos(elapsed * 0.72) * orbitA * 0.72 +
+            Math.sin(elapsed * 1.88) * orbitA * 0.14;
+
+          const ay =
+            Math.sin(elapsed * 0.76) * orbitA * 0.72 +
+            Math.cos(elapsed * 1.52) * orbitA * 0.12;
+
+          const bx =
+            Math.cos(elapsed * 0.72 + Math.PI) * orbitB * 0.72 +
+            Math.sin(elapsed * 1.66 + Math.PI) * orbitB * 0.12;
+
+          const by =
+            Math.sin(elapsed * 0.76 + Math.PI) * orbitB * 0.72 +
+            Math.cos(elapsed * 1.74 + Math.PI) * orbitB * 0.12;
+
+          const breathe = 1 + 0.016 * Math.sin(elapsed * 1.2);
+          const ripple = 0.008 * Math.sin(elapsed * 2.1);
+          const scaleA = breathe * (1 + ripple);
+          const scaleB = breathe * (1 - ripple * 0.82);
+
+          const angleA = elapsed * speedA * (Math.PI / 180);
+          const angleB = -elapsed * speedB * (Math.PI / 180);
+
+          if (state.uploads[0].bitmap) {
+            const alphaA = 0.95 + 0.03 * Math.sin(elapsed * 1.7);
+            drawLayer(
+              state.uploads[0].bitmap,
+              state.glowSpriteA,
+              state.cx + ax,
+              state.cy + ay,
+              angleA,
+              scaleA,
+              alphaA
+            );
+          }
+
+          if (state.uploads[1].bitmap) {
+            const alphaB = 0.93 + 0.04 * Math.cos(elapsed * 1.58);
+            drawLayer(
+              state.uploads[1].bitmap,
+              state.glowSpriteB,
+              state.cx + bx,
+              state.cy + by,
+              angleB,
+              scaleB,
+              alphaB
+            );
+          }
+        }
+
+        state.rafId = requestAnimationFrame(renderFrame);
+      }
+
+      function openVisualizer() {
+        el.setupScreen.classList.remove('active');
+        el.visualizerScreen.classList.add('active');
+        el.visualizerScreen.setAttribute('aria-hidden', 'false');
+        state.active = true;
+        state.startTime = 0;
+        state.lastTime = 0;
+        pingUI();
+      }
+
+      async function closeVisualizer() {
+        state.active = false;
+        if (document.fullscreenElement) {
+          try {
+            await document.exitFullscreen();
+          } catch (e) {}
+        }
+        el.visualizerScreen.classList.remove('active');
+        el.setupScreen.classList.add('active');
+        el.visualizerScreen.setAttribute('aria-hidden', 'true');
+      }
+
+      async function toggleFullscreen() {
+        try {
+          if (!document.fullscreenElement) {
+            await el.visualizerScreen.requestFullscreen();
+          } else {
+            await document.exitFullscreen();
+          }
+        } catch (e) {}
+      }
+
+      function handleVisibility() {
+        if (document.hidden) {
+          if (state.rafId) cancelAnimationFrame(state.rafId);
+          state.rafId = 0;
+        } else if (!state.rafId) {
+          state.lastTime = performance.now();
+          state.rafId = requestAnimationFrame(renderFrame);
+        }
+      }
+
+      function bindEvents() {
+        el.file1.addEventListener('change', (e) => handleFile(e.target.files[0], 0));
+        el.file2.addEventListener('change', (e) => handleFile(e.target.files[0], 1));
+
+        el.speed1.addEventListener('input', updateSpeedLabels);
+        el.speed2.addEventListener('input', updateSpeedLabels);
+
+        el.submitBtn.addEventListener('click', openVisualizer);
+        el.closeBtn.addEventListener('click', closeVisualizer);
+        el.fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+        el.visualizerScreen.addEventListener('mousemove', pingUI);
+        el.visualizerScreen.addEventListener('touchstart', pingUI, { passive: true });
+
+        window.addEventListener('resize', resizeCanvases, { passive: true });
+        document.addEventListener('visibilitychange', handleVisibility);
+      }
+
+      function init() {
+        state.particleSprite = createParticleSprite();
+        state.glowSpriteA = createGlowSprite('rgba(127,232,255,0.42)', 'rgba(104,141,255,0.08)');
+        state.glowSpriteB = createGlowSprite('rgba(104,141,255,0.42)', 'rgba(127,232,255,0.08)');
+
+        configureContexts();
+        updateSpeedLabels();
+        resizeCanvases();
+        bindEvents();
+
+        state.rafId = requestAnimationFrame(renderFrame);
+      }
+
+      init();
+    })();
   </script>
 </body>
 </html>
